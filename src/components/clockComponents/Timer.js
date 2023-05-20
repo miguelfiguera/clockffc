@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { sessionBreakStore } from "./states";
-import theSound from '../../alarm.wav'
+import theSound from "../../alarm.wav";
 
 export default function Timer() {
   const { breakTimer, session, reset } = sessionBreakStore();
@@ -11,7 +11,9 @@ export default function Timer() {
   function settingTime(session) {
     const minutos = Math.floor(session / 60000);
     const segundos = Math.floor((session % 60000) / 1000);
-    return `${minutos < 10 ? '0':''}${minutos}:${(segundos < 10 ? "0" : "")}${segundos}`
+    return `${minutos < 10 ? "0" : ""}${minutos}:${
+      segundos < 10 ? "0" : ""
+    }${segundos}`;
   }
 
   function resetAll() {
@@ -20,7 +22,7 @@ export default function Timer() {
     clearInterval(localStorage.getItem("interval-id"));
     setTimerOn(false);
     setOnBreak(false);
-    instancesOfSound('stop')
+    instancesOfSound("stop");
     localStorage.clear();
   }
 
@@ -28,24 +30,22 @@ export default function Timer() {
     setTimerOn(!timerOn);
   }
 
-  function instancesOfSound(answer){
-    const audio=document.getElementById('beep')
-    if(answer==='play'){
-      audio.currentTime=0
-      audio.play()
-    } else if (answer==='stop'){
-      audio.pause()
-      audio.currentTime=0
+  function instancesOfSound(answer) {
+    const audio = document.getElementById("beep");
+    if (answer === "play") {
+      audio.currentTime = 0;
+      audio.play();
+    } else if (answer === "stop") {
+      audio.pause();
+      audio.currentTime = 0;
     }
-
   }
-
 
   //session control
 
   useEffect(() => {
     const controlTime = () => {
-      let pendingTime = (session * 60000);
+      let pendingTime = session * 60000;
 
       if (
         timerOn === true &&
@@ -59,11 +59,13 @@ export default function Timer() {
           setTimeLeft(settingTime(pendingTime));
           localStorage.setItem("pendingTime", pendingTime);
           if (pendingTime < 1000) {
+            // if (pendingTime===0) {
             setOnBreak(true);
             clearInterval(intervalo);
-            instancesOfSound('play')
+            setTimerOn(false);
+            instancesOfSound("play");
             localStorage.clear();
-            console.log('TimeLEft done')
+            console.log("session done", timeLeft);
           }
         }, 1000);
         localStorage.clear();
@@ -74,12 +76,14 @@ export default function Timer() {
           setTimeLeft(settingTime(pendingTime));
           localStorage.setItem("pendingTime", pendingTime);
           if (pendingTime < 1000) {
+            // if (pendingTime===0) {
+
             setOnBreak(true);
             clearInterval(intervalo);
-            instancesOfSound('play')
+            setTimerOn(false);
+            instancesOfSound("play");
             localStorage.clear();
-            console.log('TimeLEft done')
-
+            console.log("session done", timeLeft);
           }
         }, 1000);
         localStorage.clear();
@@ -93,51 +97,51 @@ export default function Timer() {
     controlTime();
   }, [timerOn]);
 
-
-
   //Break control
 
   useEffect(() => {
     const controlBreak = () => {
-      let pendingTime = (breakTimer * 60000 );
-
-      if (
-        onBreak === true &&
-        localStorage.getItem("pendingTime")
-      ) {
+      let pendingTime = breakTimer * 60250;
+      if (onBreak === true && localStorage.getItem("pendingTime")) {
         let pendingTime = localStorage.getItem("pendingTime");
         localStorage.clear();
         const intervalo = setInterval(() => {
-          setTimeLeft(settingTime(pendingTime));
           pendingTime = pendingTime -= 1000;
+          setTimeLeft(settingTime(pendingTime));
           localStorage.setItem("pendingTime", pendingTime);
-          if (pendingTime < 1000 ) {
+          if (pendingTime < 1000) {
+            // if (pendingTime===0) {
+
             setOnBreak(false);
             clearInterval(intervalo);
-            instancesOfSound('play')
+            setTimerOn(true);
+            instancesOfSound("play");
             localStorage.clear();
-            console.log('done',timeLeft)
+            console.log("done", timeLeft);
           }
         }, 1000);
         localStorage.clear();
         localStorage.setItem("interval-id", intervalo);
-      } else if ( onBreak === true) {
+      } else if (onBreak === true) {
         const intervalo = setInterval(() => {
-          setTimeLeft(settingTime(pendingTime));
           pendingTime = pendingTime -= 1000;
+          setTimeLeft(settingTime(pendingTime));
           localStorage.setItem("pendingTime", pendingTime);
           if (pendingTime < 1000) {
+            // if (pendingTime===0) {
+
             setOnBreak(false);
             clearInterval(intervalo);
-            instancesOfSound('play')
+            setTimerOn(true);
+            instancesOfSound("play");
             localStorage.clear();
-            console.log('done',timeLeft)
+            console.log("done", timeLeft);
           }
         }, 1000);
         localStorage.clear();
         localStorage.setItem("interval-id", intervalo);
       }
-      
+
       if (timerOn === false) {
         clearInterval(localStorage.getItem("interval-id"));
       }
@@ -146,23 +150,24 @@ export default function Timer() {
   }, [onBreak]);
 
   useEffect(() => {
-    function update(){ 
-    localStorage.clear()
-    setTimeLeft(settingTime(session * 60000));}
+    function update() {
+      localStorage.clear();
+      setTimeLeft(settingTime(session * 60000));
+    }
 
-    update()
+    update();
   }, [session]);
 
   return (
     <div className="container col">
       <h1 id="timer-label" className="text-center">
-        {onBreak===true ? 'Break' : 'Session'}
+        {onBreak === true ? "Break" : "Session"}
       </h1>
       <h3 id="time-left" className="text-center">
         {timeLeft}
       </h3>
 
-      <audio src={theSound} id='beep'></audio>
+      <audio src={theSound} id="beep"></audio>
       <button id="start_stop" className="btn btn-primary" onClick={activate}>
         <i className="fa-solid fa-play fa-2xl"></i>
       </button>
