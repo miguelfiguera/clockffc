@@ -1,29 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { sessionBreakStore } from "./states";
 import theSound from "../../alarm.wav";
 
 export default function Timer() {
-  const { breakTimer, session, reset } = sessionBreakStore();
-  const [timeLeft, setTimeLeft] = useState();
+  const { breakTimer, session, reset, seconds, setSeconds, setSession } =
+    sessionBreakStore();
   const [onBreak, setOnBreak] = useState(false);
   const [timerOn, setTimerOn] = useState(false);
-
-  function settingTime(session) {
-    const minutos = Math.floor(session / 60000);
-    const segundos = Math.floor((session % 60000) / 1000);
-    return `${minutos < 10 ? "0" : ""}${minutos}:${
-      segundos < 10 ? "0" : ""
-    }${segundos}`;
-  }
+  const [minutes, setMinutes] = useState(session);
+  const intervalRef = useRef(null);
 
   function resetAll() {
-    reset();
-    setTimeLeft(settingTime(session * 60000));
-    clearInterval(localStorage.getItem("interval-id"));
+    clearInterval(intervalRef.current);
     setTimerOn(false);
     setOnBreak(false);
+    setMinutes(session);
+    reset();
     instancesOfSound("stop");
-    localStorage.clear();
   }
 
   function activate() {
@@ -41,130 +34,53 @@ export default function Timer() {
     }
   }
 
-  //session control
-
   useEffect(() => {
-    const controlTime = () => {
-      let pendingTime = session * 60000;
+    function counter() {
+      if (timerOn === true) {
+        intervalRef.current = setInterval(() => {
+          clearInterval(intervalRef.current);
+          if (seconds === 0) {
+            if (minutes !== 0) {
+              setSeconds(59);
+              setMinutes(minutes - 1);
+            } else {
+              instancesOfSound("play");
+              setOnBreak(!onBreak);
 
-      if (
-        timerOn === true &&
-        onBreak === false &&
-        localStorage.getItem("pendingTime")
-      ) {
-        let pendingTime = localStorage.getItem("pendingTime");
-        localStorage.clear();
-        const intervalo = setInterval(() => {
-          pendingTime = pendingTime -= 1000;
-          setTimeLeft(settingTime(pendingTime));
-          localStorage.setItem("pendingTime", pendingTime);
-          if (pendingTime < 1000) {
-            // if (pendingTime===0) {
-            setOnBreak(true);
-            clearInterval(intervalo);
-            setTimerOn(false);
-            instancesOfSound("play");
-            localStorage.clear();
-            console.log("session done", timeLeft);
+              let thisMinutes = onBreak ? breakTimer : session;
+              let thisSeconds = 0;
+
+              setMinutes(thisMinutes);
+              setSeconds(thisSeconds);
+            }
+          } else {
+            setSeconds(seconds - 1);
           }
         }, 1000);
-        localStorage.clear();
-        localStorage.setItem("interval-id", intervalo);
-      } else if (timerOn === true && onBreak === false) {
-        const intervalo = setInterval(() => {
-          pendingTime = pendingTime -= 1000;
-          setTimeLeft(settingTime(pendingTime));
-          localStorage.setItem("pendingTime", pendingTime);
-          if (pendingTime < 1000) {
-            // if (pendingTime===0) {
-
-            setOnBreak(true);
-            clearInterval(intervalo);
-            setTimerOn(false);
-            instancesOfSound("play");
-            localStorage.clear();
-            console.log("session done", timeLeft);
-          }
-        }, 1000);
-        localStorage.clear();
-        localStorage.setItem("interval-id", intervalo);
+      } else {
+        clearInterval(intervalRef.current);
       }
-      if (timerOn === false) {
-        clearInterval(localStorage.getItem("interval-id"));
-      }
-    };
-
-    controlTime();
-  }, [timerOn]);
-
-  //Break control
-
-  useEffect(() => {
-    const controlBreak = () => {
-      let pendingTime = breakTimer * 60250;
-      if (onBreak === true && localStorage.getItem("pendingTime")) {
-        let pendingTime = localStorage.getItem("pendingTime");
-        localStorage.clear();
-        const intervalo = setInterval(() => {
-          pendingTime = pendingTime -= 1000;
-          setTimeLeft(settingTime(pendingTime));
-          localStorage.setItem("pendingTime", pendingTime);
-          if (pendingTime < 1000) {
-            // if (pendingTime===0) {
-
-            setOnBreak(false);
-            clearInterval(intervalo);
-            setTimerOn(true);
-            instancesOfSound("play");
-            localStorage.clear();
-            console.log("done", timeLeft);
-          }
-        }, 1000);
-        localStorage.clear();
-        localStorage.setItem("interval-id", intervalo);
-      } else if (onBreak === true) {
-        const intervalo = setInterval(() => {
-          pendingTime = pendingTime -= 1000;
-          setTimeLeft(settingTime(pendingTime));
-          localStorage.setItem("pendingTime", pendingTime);
-          if (pendingTime < 1000) {
-            // if (pendingTime===0) {
-
-            setOnBreak(false);
-            clearInterval(intervalo);
-            setTimerOn(true);
-            instancesOfSound("play");
-            localStorage.clear();
-            console.log("done", timeLeft);
-          }
-        }, 1000);
-        localStorage.clear();
-        localStorage.setItem("interval-id", intervalo);
-      }
-
-      if (timerOn === false) {
-        clearInterval(localStorage.getItem("interval-id"));
-      }
-    };
-    controlBreak();
-  }, [onBreak]);
-
-  useEffect(() => {
-    function update() {
-      localStorage.clear();
-      setTimeLeft(settingTime(session * 60000));
     }
 
-    update();
+    counter();
+  }, [seconds, timerOn]);
+
+  useEffect(() => {
+    function setting() {
+      setMinutes(session);
+    }
+    setting();
   }, [session]);
 
   return (
     <div className="container col">
       <h1 id="timer-label" className="text-center">
-        {onBreak === true ? "Break" : "Session"}
+        {onBreak === true ? "Break has begun, new session in: " : "Session"}
       </h1>
       <h3 id="time-left" className="text-center">
-        {timeLeft}
+        {`${minutes < 10 ? `0${minutes}` : minutes}:${
+          seconds < 10 ? `0${seconds}` : seconds
+        }`}
       </h3>
 
       <audio src={theSound} id="beep"></audio>
