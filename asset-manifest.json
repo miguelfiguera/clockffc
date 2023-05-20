@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/clockffc/static/css/main.e6c13ad2.css",
+    "main.js": "/clockffc/static/js/main.3d00d8e5.js",
+    "static/js/787.9e8b4fde.chunk.js": "/clockffc/static/js/787.9e8b4fde.chunk.js",
+    "static/media/alarm.wav": "/clockffc/static/media/alarm.1d012d48bf3dfa3cc856.wav",
+    "index.html": "/clockffc/index.html",
+    "main.e6c13ad2.css.map": "/clockffc/static/css/main.e6c13ad2.css.map",
+    "main.3d00d8e5.js.map": "/clockffc/static/js/main.3d00d8e5.js.map",
+    "787.9e8b4fde.chunk.js.map": "/clockffc/static/js/787.9e8b4fde.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.3d00d8e5.js"
+  ]
+}
