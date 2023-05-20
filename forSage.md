@@ -1,3 +1,24 @@
+import React, {useState,useEffect} from "react";
+import Timer from "./clockComponents/Timer";
+import Break from "./clockComponents/Break";
+import Session from "./clockComponents/Session";
+
+export default function Clock() { 
+  return (
+    <div className="container border border-secondary rounded-3 py-5 my-5">
+      <div className="row align-items-star">
+
+    <Break/>
+    <Timer/> 
+    <Session/>
+
+
+    </div>
+    </div>
+  );
+}
+
+
 import React, { useState, useEffect } from "react";
 import { sessionBreakStore } from "./states";
 import theSound from '../../alarm.wav'
@@ -9,9 +30,8 @@ export default function Timer() {
   const [timerOn, setTimerOn] = useState(false);
 
   function settingTime(session) {
-    if(session===0){return '00:00'}
     const minutos = Math.floor(session / 60000);
-    const segundos = Math.floor((session % 60000) / 1000);
+    const segundos = ((session % 60000) / 1000).toFixed(0);
     return `${minutos < 10 ? '0':''}${minutos}:${(segundos < 10 ? "0" : "")}${segundos}`
   }
 
@@ -43,7 +63,7 @@ export default function Timer() {
 
   useEffect(() => {
     const controlTime = () => {
-      let pendingTime = (session * 60000);
+      let pendingTime = (session * 100);
 
       if (
         timerOn === true &&
@@ -95,7 +115,7 @@ export default function Timer() {
 
   useEffect(() => {
     const controlTime = () => {
-      let pendingTime = (breakTimer * 60000 );
+      let pendingTime = (breakTimer * 1000 );
 
       if (
         onBreak === true &&
@@ -109,6 +129,7 @@ export default function Timer() {
           setTimeLeft(settingTime(pendingTime));
           if (pendingTime < 1000 ) {
             setOnBreak(false);
+            setTimerOn(false)
             instancesOfSound('play')
             clearInterval(intervalo);
             localStorage.clear();
@@ -125,6 +146,7 @@ export default function Timer() {
           if (pendingTime < 1000) {
             setOnBreak(false);
             clearInterval(intervalo);
+            setTimerOn(false)
             instancesOfSound('play')
             localStorage.clear();
             console.log('lol')
@@ -149,7 +171,7 @@ export default function Timer() {
   return (
     <div className="container col">
       <h1 id="timer-label" className="text-center">
-        {onBreak===true ? 'Break' : 'Session'}
+        Session
       </h1>
       <h3 id="time-left" className="text-center">
         {timeLeft}
@@ -166,3 +188,78 @@ export default function Timer() {
     </div>
   );
 }
+
+import React from 'react'
+import {sessionBreakStore} from './states'
+
+export default function Session() {
+const session = sessionBreakStore((state)=>state.session)
+
+const setSessionPlus= sessionBreakStore((state)=>state.increaseSession)
+const setSessionMinus= sessionBreakStore((state)=>state.decreaseSession)
+
+const conditionalUp=()=>{
+  return session < 60 ? setSessionPlus() : 60;
+}
+
+
+const conditionalDown=()=>{
+  return session > 1 ? setSessionMinus() : 1;
+}
+
+
+  return (
+    <div className="container col">
+    <h1 id="session-label" className="text-center">Session Length</h1>
+    <button id="session-increment" className="btn btn-primary" onClick={conditionalUp}><i className="fa-solid fa-arrow-up fa-2xl"></i></button>
+
+    <h5 id="session-length" className="text-center">{session}</h5>
+    <button id="session-decrement" className="btn btn-primary" onClick={conditionalDown}><i className="fa-solid fa-arrow-down fa-2xl"></i></button>
+
+  </div>  )
+}
+
+
+
+
+import React,{useState} from 'react'
+import {sessionBreakStore} from './states'
+
+
+export default function Break() {
+
+    const rest=sessionBreakStore((state)=>state.breakTimer)
+    const restPlus=sessionBreakStore((state)=>state.increaseBreak)
+    const restMinus=sessionBreakStore((state)=>state.decreaseBreak)
+
+    const conditionalUp=()=>{
+      return rest < 60 ? restPlus() : 60  
+    }
+
+    const conditionalDown=()=>{
+      return rest > 1 ? restMinus() :1
+    }
+
+
+  return (
+    <div className="container col">
+    <h1 id="break-label" className="text-center">Break Length</h1>
+    <button id="break-increment" className="btn btn-primary" onClick={conditionalUp}><i className="fa-solid fa-arrow-up fa-2xl"></i></button>
+
+    <h5 id="break-length" className="text-center">{rest}</h5>
+    <button id="break-decrement" className="btn btn-primary" onClick={conditionalDown}><i className="fa-solid fa-arrow-down fa-2xl"></i></button>
+
+  </div>
+  )
+}
+import {create} from 'zustand'
+
+export const sessionBreakStore= create((set)=>({
+breakTimer:5,
+session:25,
+increaseSession:()=> set((state)=>({session: state.session + 1})),
+decreaseSession:()=> set((state)=>({session: state.session - 1})),
+increaseBreak:()=> set((state)=>({breakTimer: state.breakTimer + 1})),
+decreaseBreak:()=> set((state)=>({breakTimer: state.breakTimer - 1})),
+reset:()=>set({breakTimer:5,session:25})
+}))
