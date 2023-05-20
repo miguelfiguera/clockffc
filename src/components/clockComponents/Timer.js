@@ -45,25 +45,26 @@ export default function Timer() {
               setMinutes(minutes - 1);
             } else {
               instancesOfSound("play");
-              setOnBreak(!onBreak);
+              let thisMinutes= onBreak ? session:breakTimer ;
 
-              let thisMinutes = onBreak ? breakTimer : session;
-              let thisSeconds = 0;
 
+              console.log('minutes',thisMinutes)
               setMinutes(thisMinutes);
-              setSeconds(thisSeconds);
+              setOnBreak(!onBreak)
             }
           } else {
             setSeconds(seconds - 1);
           }
         }, 1000);
-      } else {
+      }
+      
+      else {
         clearInterval(intervalRef.current);
       }
     }
 
     counter();
-  }, [seconds, timerOn]);
+  }, [seconds, timerOn,onBreak]);
 
   useEffect(() => {
     function setting() {
