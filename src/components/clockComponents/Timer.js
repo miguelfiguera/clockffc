@@ -9,7 +9,6 @@ export default function Timer() {
   const [timerOn, setTimerOn] = useState(false);
 
   function settingTime(session) {
-    if(session===0){return '00:00'}
     const minutos = Math.floor(session / 60000);
     const segundos = Math.floor((session % 60000) / 1000);
     return `${minutos < 10 ? '0':''}${minutos}:${(segundos < 10 ? "0" : "")}${segundos}`
@@ -41,6 +40,9 @@ export default function Timer() {
 
   }
 
+
+  //session control
+
   useEffect(() => {
     const controlTime = () => {
       let pendingTime = (session * 60000);
@@ -54,8 +56,8 @@ export default function Timer() {
         localStorage.clear();
         const intervalo = setInterval(() => {
           pendingTime = pendingTime -= 1000;
-          localStorage.setItem("pendingTime", pendingTime);
           setTimeLeft(settingTime(pendingTime));
+          localStorage.setItem("pendingTime", pendingTime);
           if (pendingTime < 1000) {
             setOnBreak(true);
             clearInterval(intervalo);
@@ -69,13 +71,12 @@ export default function Timer() {
       } else if (timerOn === true && onBreak === false) {
         const intervalo = setInterval(() => {
           pendingTime = pendingTime -= 1000;
-          localStorage.setItem("pendingTime", pendingTime);
           setTimeLeft(settingTime(pendingTime));
+          localStorage.setItem("pendingTime", pendingTime);
           if (pendingTime < 1000) {
             setOnBreak(true);
             clearInterval(intervalo);
             instancesOfSound('play')
-
             localStorage.clear();
             console.log('TimeLEft done')
 
@@ -93,8 +94,11 @@ export default function Timer() {
   }, [timerOn]);
 
 
+
+  //Break control
+
   useEffect(() => {
-    const controlTime = () => {
+    const controlBreak = () => {
       let pendingTime = (breakTimer * 60000 );
 
       if (
@@ -104,30 +108,30 @@ export default function Timer() {
         let pendingTime = localStorage.getItem("pendingTime");
         localStorage.clear();
         const intervalo = setInterval(() => {
+          setTimeLeft(settingTime(pendingTime));
           pendingTime = pendingTime -= 1000;
           localStorage.setItem("pendingTime", pendingTime);
-          setTimeLeft(settingTime(pendingTime));
           if (pendingTime < 1000 ) {
             setOnBreak(false);
-            instancesOfSound('play')
             clearInterval(intervalo);
+            instancesOfSound('play')
             localStorage.clear();
-            console.log('lol')
+            console.log('done',timeLeft)
           }
         }, 1000);
         localStorage.clear();
         localStorage.setItem("interval-id", intervalo);
       } else if ( onBreak === true) {
         const intervalo = setInterval(() => {
+          setTimeLeft(settingTime(pendingTime));
           pendingTime = pendingTime -= 1000;
           localStorage.setItem("pendingTime", pendingTime);
-          setTimeLeft(settingTime(pendingTime));
           if (pendingTime < 1000) {
             setOnBreak(false);
             clearInterval(intervalo);
             instancesOfSound('play')
             localStorage.clear();
-            console.log('lol')
+            console.log('done',timeLeft)
           }
         }, 1000);
         localStorage.clear();
@@ -138,12 +142,15 @@ export default function Timer() {
         clearInterval(localStorage.getItem("interval-id"));
       }
     };
-    controlTime();
+    controlBreak();
   }, [onBreak]);
 
   useEffect(() => {
-    setTimeLeft(settingTime(session * 60000));
+    function update(){ 
     localStorage.clear()
+    setTimeLeft(settingTime(session * 60000));}
+
+    update()
   }, [session]);
 
   return (
