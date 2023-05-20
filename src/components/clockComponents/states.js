@@ -2,8 +2,8 @@ import {create} from 'zustand'
 
 export const sessionBreakStore= create((set)=>({
 breakTimer:5,
-session:0,
-seconds:5,
+session:25,
+seconds:0,
 setSeconds:(ele)=>set({seconds:ele}),
 setSession:(ele)=>set({session: ele}),
 increaseSession:()=> set((state)=>({session: state.session + 1})),
